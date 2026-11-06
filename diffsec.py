@@ -137,6 +137,7 @@ class PatternResult:
 
 @dataclass
 class Report:
+    schema_version: str
     repo: str
     from_ref: str
     to_ref: str
@@ -335,15 +336,31 @@ def analyze(
             intent_hits: list[SurfaceHit] = []
             if intent:
                 references_fix = repo.file_mentions(to_ref, hit.file, intent)
+                # Match the module's hyphenated name as a WHOLE identifier. We
+                # deliberately do not match a camelCase symbol or a bare
+                # substring: a short token ("otp") or a camelCase name
+                # (emailOtp) collides with plugin-registration lines
+                # (emailOTPClient() beside twoFactorClient()) and would credit
+                # an uncontrolled sibling with a control it lacks. Precision
+                # over recall.
                 token = re.escape(_module_token(hit.file))
                 # find test lines that mention this module AND the fix mechanism
                 probe = f"({token}).*({intent})|({intent}).*({token})"
+                # git grep (-E) has no portable word boundary, so it matches the
+                # token anywhere on the line; re-check in Python that the token
+                # is a whole identifier, not a substring of a longer symbol.
+                whole = re.compile(
+                    r"(?<![A-Za-z0-9])" + token + r"(?![A-Za-z0-9])", re.IGNORECASE
+                )
                 test_hits = repo.grep_ref(
                     to_ref, probe,
                     scope=p_scope,
                     exclude=[g for g in p_exclude if not _TEST_FILE.search(g)] or [],
                 )
-                intent_hits = [h for h in test_hits if _TEST_FILE.search(h.file)][:5]
+                intent_hits = [
+                    h for h in test_hits
+                    if _TEST_FILE.search(h.file) and whole.search(h.snippet)
+                ][:5]
 
             siblings.append(
                 Sibling(
@@ -385,6 +402,7 @@ def analyze(
     )
 
     return Report(
+        schema_version="1",
         repo=str(repo.path),
         from_ref=from_ref,
         to_ref=to_ref,

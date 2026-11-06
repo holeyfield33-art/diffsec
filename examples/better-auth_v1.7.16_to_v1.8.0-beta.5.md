@@ -27,7 +27,7 @@
   | `packages/better-auth/src/api/routes/sign-in.ts:13` | **no** | 5 (two-factor.attempt-cap.test.ts:13, two-factor.security.test.ts:32, two-factor.security.test.ts:63, two-factor.security.test.ts:217, two-factor.security.test.ts:254) |
   | `packages/better-auth/src/api/routes/update-session.ts:5` | **no** | none |
   | `packages/better-auth/src/api/routes/update-user.ts:6` | **no** | none |
-  | `packages/better-auth/src/cookies/index.ts:157` | yes | 4 (two-factor.security.test.ts:63, two-factor.security.test.ts:187, two-factor.security.test.ts:195, two-factor.security.test.ts:217) |
+  | `packages/better-auth/src/cookies/index.ts:157` | yes | 3 (two-factor.security.test.ts:63, two-factor.security.test.ts:195, two-factor.security.test.ts:217) |
   | `packages/better-auth/src/plugins/admin/routes.ts:14` | **no** | 1 (types.test.ts:8) |
   | `packages/better-auth/src/plugins/email-otp/routes.ts:12` | **no** | none |
   | `packages/better-auth/src/plugins/magic-link/index.ts:9` | **no** | 1 (two-factor.test.ts:2832) |
@@ -39,8 +39,8 @@
   | `packages/better-auth/src/plugins/organization/routes/crud-org.ts:5` | **no** | none |
   | `packages/better-auth/src/plugins/organization/routes/crud-team.ts:9` | **no** | none |
   | `packages/better-auth/src/plugins/siwe/index.ts:6` | **no** | none |
-  | `packages/better-auth/src/plugins/two-factor/otp/index.ts:5` | yes | 5 (client.test.ts:635, two-factor.account-lockout.test.ts:146, two-factor.account-lockout.test.ts:147, two-factor.account-lockout.test.ts:195, two-factor.account-lockout.test.ts:200) |
-  | `packages/better-auth/src/plugins/two-factor/totp/index.ts:7` | yes | 5 (two-factor.attempt-cap.test.ts:70, two-factor.security.test.ts:473, two-factor.test.ts:81, two-factor.test.ts:337, two-factor.test.ts:378) |
+  | `packages/better-auth/src/plugins/two-factor/otp/index.ts:5` | yes | 5 (two-factor.security.test.ts:545, two-factor.security.test.ts:555, two-factor.security.test.ts:565, two-factor.test.ts:378, two-factor.test.ts:749) |
+  | `packages/better-auth/src/plugins/two-factor/totp/index.ts:7` | yes | 5 (two-factor.attempt-cap.test.ts:70, two-factor.security.test.ts:473, two-factor.test.ts:81, two-factor.test.ts:378, two-factor.test.ts:880) |
   | `packages/better-auth/src/plugins/two-factor/verify-two-factor.ts:5` | yes | 1 (two-factor.account-lockout.test.ts:17) |
   | `packages/better-auth/src/plugins/username/index.ts:11` | **no** | 1 (two-factor.security.test.ts:32) |
 
