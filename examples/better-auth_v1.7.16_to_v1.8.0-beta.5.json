@@ -1,0 +1,382 @@
+{
+  "repo": "/home/claude/ba-work/repo",
+  "from_ref": "v1.7.16",
+  "to_ref": "v1.8.0-beta.5",
+  "grep_backend": "git grep",
+  "meta_warning": "Everything in the from..to diff is a fix the maintainer already made: known, fix-in-flight, zero bounty novelty, and unsafe to write up as a pre-patch exploit. Do NOT treat the security_commits list as findings. The only novel-capable leads are unpatched_siblings -- pattern call-sites the patch did not touch -- and even those are hypotheses until a negative control is checked.",
+  "security_commits": [
+    {
+      "sha": "de9fb2b91",
+      "subject": "fix!: harden authentication flows (#12202)",
+      "body": "",
+      "signal_score": 8,
+      "signals": [
+        "auth(enticat|ori)",
+        "harden"
+      ],
+      "breaking": true,
+      "files": [
+        "packages/better-auth/src/api/dispatch.ts",
+        "packages/better-auth/src/api/index.ts",
+        "packages/better-auth/src/api/routes/account.ts",
+        "packages/better-auth/src/api/state/session-source.ts",
+        "packages/better-auth/src/oauth2/link-account.ts",
+        "packages/better-auth/src/oauth2/state.ts",
+        "packages/better-auth/src/plugins/anonymous/index.ts",
+        "packages/better-auth/src/plugins/device-authorization/routes.ts",
+        "packages/better-auth/src/plugins/organization/routes/crud-invites.ts",
+        "packages/better-auth/src/plugins/phone-number/routes.ts",
+        "packages/better-auth/src/plugins/phone-number/types.ts",
+        "packages/better-auth/src/plugins/two-factor/index.ts",
+        "packages/better-auth/src/state.ts"
+      ],
+      "companion_tests": []
+    },
+    {
+      "sha": "f3a687965",
+      "subject": "chore: sync main to next",
+      "body": "Merge main through v1.7.11 into next while preserving beta versions,\nboth changelog histories, and accumulated pre-release changesets.\n\nCombine CIMD refresh race protection with metadata extensions,\npairwise sectors, and initial-access-token machine scopes. Keep both\nCIMD regressions and the refactored Next.js demo runtime.\n\nAdapt the demo runtime to terminate(ChildProcess) and add a failing-first\nprocess cleanup regression test for the semantic merge conflict.",
+      "signal_score": 2,
+      "signals": [
+        "token"
+      ],
+      "breaking": false,
+      "files": [],
+      "companion_tests": []
+    },
+    {
+      "sha": "ec0afdef5",
+      "subject": "fix(device-authorization)!: record one decision per device code (#11772)",
+      "body": "",
+      "signal_score": 2,
+      "signals": [
+        "auth(enticat|ori)"
+      ],
+      "breaking": false,
+      "files": [
+        "packages/better-auth/src/plugins/device-authorization/routes.ts"
+      ],
+      "companion_tests": []
+    }
+  ],
+  "patterns": [
+    {
+      "name": "session-cookie-write",
+      "regex": "setSessionCookie|setCookieCache",
+      "surface_count": 27,
+      "touched_files": [
+        "packages/better-auth/src/api/routes/sign-up.ts",
+        "packages/better-auth/src/plugins/anonymous/index.ts",
+        "packages/better-auth/src/plugins/organization/routes/crud-invites.ts",
+        "packages/better-auth/src/plugins/phone-number/routes.ts",
+        "packages/better-auth/src/plugins/two-factor/index.ts"
+      ],
+      "unpatched_siblings": [
+        {
+          "file": "packages/better-auth/src/api/routes/callback.ts",
+          "line": 5,
+          "snippet": "import { setSessionCookie } from \"../../cookies\";",
+          "references_fix_mechanism": false,
+          "intent_test_hits": []
+        },
+        {
+          "file": "packages/better-auth/src/api/routes/email-verification.ts",
+          "line": 9,
+          "snippet": "import { setSessionCookie } from \"../../cookies\";",
+          "references_fix_mechanism": false,
+          "intent_test_hits": []
+        },
+        {
+          "file": "packages/better-auth/src/api/routes/session.ts",
+          "line": 19,
+          "snippet": "setCookieCache,",
+          "references_fix_mechanism": false,
+          "intent_test_hits": [
+            {
+              "file": "packages/better-auth/src/plugins/anonymous/anon.test.ts",
+              "line": 790,
+              "snippet": "// The two-factor challenge discards the provisional session, so linking"
+            },
+            {
+              "file": "packages/better-auth/src/plugins/two-factor/two-factor.security.test.ts",
+              "line": 63,
+              "snippet": "describe(\"two-factor security: sign-in does not leak session cookies (cookieCache enabled)\", async () => {"
+            },
+            {
+              "file": "packages/better-auth/src/plugins/two-factor/two-factor.security.test.ts",
+              "line": 217,
+              "snippet": "describe(\"two-factor security: sign-in does not leak session cookies (cookieCache disabled)\", async () => {"
+            },
+            {
+              "file": "packages/better-auth/src/plugins/two-factor/two-factor.security.test.ts",
+              "line": 254,
+              "snippet": "it(\"response carries no valid signed session_token on 2FA-required sign-in\", async () => {"
+            },
+            {
+              "file": "packages/better-auth/src/plugins/two-factor/two-factor.security.test.ts",
+              "line": 286,
+              "snippet": "describe(\"two-factor security: chunked session_data is fully scrubbed on 2FA-required sign-in\", async () => {"
+            }
+          ]
+        },
+        {
+          "file": "packages/better-auth/src/api/routes/sign-in.ts",
+          "line": 13,
+          "snippet": "import { setSessionCookie } from \"../../cookies\";",
+          "references_fix_mechanism": false,
+          "intent_test_hits": [
+            {
+              "file": "packages/better-auth/src/plugins/two-factor/two-factor.attempt-cap.test.ts",
+              "line": 13,
+              "snippet": "* A single 2FA sign-in challenge must grant only a bounded number of guesses."
+            },
+            {
+              "file": "packages/better-auth/src/plugins/two-factor/two-factor.security.test.ts",
+              "line": 32,
+              "snippet": "* The 2FA after-hook matcher covers `/sign-in/email`, `/sign-in/username` and"
+            },
+            {
+              "file": "packages/better-auth/src/plugins/two-factor/two-factor.security.test.ts",
+              "line": 63,
+              "snippet": "describe(\"two-factor security: sign-in does not leak session cookies (cookieCache enabled)\", async () => {"
+            },
+            {
+              "file": "packages/better-auth/src/plugins/two-factor/two-factor.security.test.ts",
+              "line": 217,
+              "snippet": "describe(\"two-factor security: sign-in does not leak session cookies (cookieCache disabled)\", async () => {"
+            },
+            {
+              "file": "packages/better-auth/src/plugins/two-factor/two-factor.security.test.ts",
+              "line": 254,
+              "snippet": "it(\"response carries no valid signed session_token on 2FA-required sign-in\", async () => {"
+            }
+          ]
+        },
+        {
+          "file": "packages/better-auth/src/api/routes/update-session.ts",
+          "line": 5,
+          "snippet": "import { deleteSessionCookie, setSessionCookie } from \"../../cookies\";",
+          "references_fix_mechanism": false,
+          "intent_test_hits": []
+        },
+        {
+          "file": "packages/better-auth/src/api/routes/update-user.ts",
+          "line": 6,
+          "snippet": "import { deleteSessionCookie, setSessionCookie } from \"../../cookies\";",
+          "references_fix_mechanism": false,
+          "intent_test_hits": []
+        },
+        {
+          "file": "packages/better-auth/src/cookies/index.ts",
+          "line": 157,
+          "snippet": "export async function setCookieCache(",
+          "references_fix_mechanism": true,
+          "intent_test_hits": [
+            {
+              "file": "packages/better-auth/src/plugins/two-factor/two-factor.security.test.ts",
+              "line": 63,
+              "snippet": "describe(\"two-factor security: sign-in does not leak session cookies (cookieCache enabled)\", async () => {"
+            },
+            {
+              "file": "packages/better-auth/src/plugins/two-factor/two-factor.security.test.ts",
+              "line": 187,
+              "snippet": "const twoFactorEntry = setCookies.find((entry) =>"
+            },
+            {
+              "file": "packages/better-auth/src/plugins/two-factor/two-factor.security.test.ts",
+              "line": 195,
+              "snippet": "\"$path: replaying captured cookies cannot authenticate or disable 2FA\","
+            },
+            {
+              "file": "packages/better-auth/src/plugins/two-factor/two-factor.security.test.ts",
+              "line": 217,
+              "snippet": "describe(\"two-factor security: sign-in does not leak session cookies (cookieCache disabled)\", async () => {"
+            }
+          ]
+        },
+        {
+          "file": "packages/better-auth/src/plugins/admin/routes.ts",
+          "line": 14,
+          "snippet": "setSessionCookie,",
+          "references_fix_mechanism": false,
+          "intent_test_hits": [
+            {
+              "file": "packages/better-auth/src/types/types.test.ts",
+              "line": 8,
+              "snippet": "import { admin, organization, twoFactor } from \"../plugins\";"
+            }
+          ]
+        },
+        {
+          "file": "packages/better-auth/src/plugins/email-otp/routes.ts",
+          "line": 12,
+          "snippet": "import { setCookieCache, setSessionCookie } from \"../../cookies\";",
+          "references_fix_mechanism": false,
+          "intent_test_hits": []
+        },
+        {
+          "file": "packages/better-auth/src/plugins/magic-link/index.ts",
+          "line": 9,
+          "snippet": "import { setSessionCookie } from \"../../cookies\";",
+          "references_fix_mechanism": false,
+          "intent_test_hits": [
+            {
+              "file": "packages/better-auth/src/plugins/two-factor/two-factor.test.ts",
+              "line": 2832,
+              "snippet": "it(\"should not challenge 2FA on magic-link sign-in\", async () => {"
+            }
+          ]
+        },
+        {
+          "file": "packages/better-auth/src/plugins/multi-session/index.ts",
+          "line": 14,
+          "snippet": "setSessionCookie,",
+          "references_fix_mechanism": false,
+          "intent_test_hits": []
+        },
+        {
+          "file": "packages/better-auth/src/plugins/oauth-popup/index.ts",
+          "line": 316,
+          "snippet": "// The session token is the cookie `setSessionCookie` just wrote;",
+          "references_fix_mechanism": false,
+          "intent_test_hits": []
+        },
+        {
+          "file": "packages/better-auth/src/plugins/oauth-proxy/index.ts",
+          "line": 16,
+          "snippet": "import { setSessionCookie } from \"../../cookies\";",
+          "references_fix_mechanism": false,
+          "intent_test_hits": []
+        },
+        {
+          "file": "packages/better-auth/src/plugins/one-tap/index.ts",
+          "line": 12,
+          "snippet": "import { setSessionCookie } from \"../../cookies\";",
+          "references_fix_mechanism": false,
+          "intent_test_hits": []
+        },
+        {
+          "file": "packages/better-auth/src/plugins/one-time-token/index.ts",
+          "line": 11,
+          "snippet": "import { setSessionCookie } from \"../../cookies\";",
+          "references_fix_mechanism": false,
+          "intent_test_hits": []
+        },
+        {
+          "file": "packages/better-auth/src/plugins/organization/routes/crud-org.ts",
+          "line": 5,
+          "snippet": "import { setSessionCookie } from \"../../../cookies\";",
+          "references_fix_mechanism": false,
+          "intent_test_hits": []
+        },
+        {
+          "file": "packages/better-auth/src/plugins/organization/routes/crud-team.ts",
+          "line": 9,
+          "snippet": "import { setSessionCookie } from \"../../../cookies\";",
+          "references_fix_mechanism": false,
+          "intent_test_hits": []
+        },
+        {
+          "file": "packages/better-auth/src/plugins/siwe/index.ts",
+          "line": 6,
+          "snippet": "import { setSessionCookie } from \"../../cookies\";",
+          "references_fix_mechanism": false,
+          "intent_test_hits": []
+        },
+        {
+          "file": "packages/better-auth/src/plugins/two-factor/otp/index.ts",
+          "line": 5,
+          "snippet": "import { setSessionCookie } from \"../../../cookies\";",
+          "references_fix_mechanism": true,
+          "intent_test_hits": [
+            {
+              "file": "packages/better-auth/src/client/client.test.ts",
+              "line": 635,
+              "snippet": "plugins: [organizationClient(), twoFactorClient(), emailOTPClient()],"
+            },
+            {
+              "file": "packages/better-auth/src/plugins/two-factor/two-factor.account-lockout.test.ts",
+              "line": 146,
+              "snippet": "await auth.api.sendTwoFactorOTP({ body: {}, headers: challengeHeaders });"
+            },
+            {
+              "file": "packages/better-auth/src/plugins/two-factor/two-factor.account-lockout.test.ts",
+              "line": 147,
+              "snippet": "return auth.api.verifyTwoFactorOTP({"
+            },
+            {
+              "file": "packages/better-auth/src/plugins/two-factor/two-factor.account-lockout.test.ts",
+              "line": 195,
+              "snippet": "await auth.api.sendTwoFactorOTP({ body: {}, headers });"
+            },
+            {
+              "file": "packages/better-auth/src/plugins/two-factor/two-factor.account-lockout.test.ts",
+              "line": 200,
+              "snippet": "auth.api.verifyTwoFactorOTP({"
+            }
+          ]
+        },
+        {
+          "file": "packages/better-auth/src/plugins/two-factor/totp/index.ts",
+          "line": 7,
+          "snippet": "import { setSessionCookie } from \"../../../cookies\";",
+          "references_fix_mechanism": true,
+          "intent_test_hits": [
+            {
+              "file": "packages/better-auth/src/plugins/two-factor/two-factor.attempt-cap.test.ts",
+              "line": 70,
+              "snippet": "describe(\"two-factor security: TOTP enforces a per-challenge attempt cap\", async () => {"
+            },
+            {
+              "file": "packages/better-auth/src/plugins/two-factor/two-factor.security.test.ts",
+              "line": 473,
+              "snippet": "it(\"rejects an expired two-factor sign-in challenge even with a valid TOTP\", async () => {"
+            },
+            {
+              "file": "packages/better-auth/src/plugins/two-factor/two-factor.test.ts",
+              "line": 81,
+              "snippet": "const result = await client.$fetch(\"/two-factor/verify-totp\", {"
+            },
+            {
+              "file": "packages/better-auth/src/plugins/two-factor/two-factor.test.ts",
+              "line": 337,
+              "snippet": "const res = await client.twoFactor.verifyTotp({"
+            },
+            {
+              "file": "packages/better-auth/src/plugins/two-factor/two-factor.test.ts",
+              "line": 378,
+              "snippet": "expect((res.data as any)?.twoFactorMethods).toEqual([\"totp\", \"otp\"]);"
+            }
+          ]
+        },
+        {
+          "file": "packages/better-auth/src/plugins/two-factor/verify-two-factor.ts",
+          "line": 5,
+          "snippet": "import { expireCookie, setSessionCookie } from \"../../cookies\";",
+          "references_fix_mechanism": true,
+          "intent_test_hits": [
+            {
+              "file": "packages/better-auth/src/plugins/two-factor/two-factor.account-lockout.test.ts",
+              "line": 17,
+              "snippet": "import { recordTwoFactorFailure } from \"./verify-two-factor\";"
+            }
+          ]
+        },
+        {
+          "file": "packages/better-auth/src/plugins/username/index.ts",
+          "line": 11,
+          "snippet": "import { setSessionCookie } from \"../../cookies\";",
+          "references_fix_mechanism": false,
+          "intent_test_hits": [
+            {
+              "file": "packages/better-auth/src/plugins/two-factor/two-factor.security.test.ts",
+              "line": 32,
+              "snippet": "* The 2FA after-hook matcher covers `/sign-in/email`, `/sign-in/username` and"
+            }
+          ]
+        }
+      ],
+      "note": "A sibling with references_fix_mechanism=false AND no intent_test_hits is the strongest unpatched-candidate. A sibling with intent_test_hits likely has a negative control (intended behaviour) -- read those test lines before claiming anything."
+    }
+  ]
+}

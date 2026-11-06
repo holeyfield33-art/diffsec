@@ -1,0 +1,12 @@
+{
+  "_comment": "Example pattern set. diffsec is domain-agnostic; this file is the auth-specific knowledge you feed it. 'regex' finds the pattern's call-site surface. 'intent_probe' is the fix mechanism / gate whose absence in a sibling is suspicious and whose presence in a test signals intended behaviour. Edit freely per target.",
+  "patterns": [
+    {
+      "name": "session-cookie-write",
+      "regex": "setSessionCookie|setCookieCache",
+      "scope": ["packages/better-auth/src/**/*.ts"],
+      "exclude": ["**/*.test.ts", "**/*.spec.ts"],
+      "intent_probe": "asSignInGate|twoFactor|two-factor|2fa"
+    }
+  ]
+}
