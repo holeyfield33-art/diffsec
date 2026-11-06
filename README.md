@@ -58,11 +58,15 @@ The JSON is the agent-facing surface. Rely on these top-level fields:
 `0` success, `2` usage/environment error (message on stderr).
 
 **`intent_test_hits: none` is necessary, not sufficient.** The probe matches a
-module's hyphenated directory name *and* its camelCase symbol (so `email-otp`
-and `emailOtp` both hit), but it is still regex over source: a control that
-refers to the module another way, or lives outside the searched tests, is
-missed. Treat `none` as "look here first," not "no control exists" — read the
-sibling's source and tests before concluding anything.
+module's hyphenated directory name, as a whole identifier, on the same line as
+the intent term. It deliberately does *not* match camelCase symbols (`emailOtp`)
+or bare substrings (a `"otp"` token inside `emailOTPClient`): those collide
+with plugin-registration lines (`emailOTPClient()` beside `twoFactorClient()`)
+and would wrongly credit an uncontrolled sibling with a control. The trade-off
+is recall — a control that names the module only by a camelCase symbol, or
+lives outside the searched tests, is missed. Treat `none` as "look here first,"
+not "no control exists" — read the sibling's source and tests before concluding
+anything.
 
 ## Pattern file
 

@@ -180,11 +180,6 @@
             },
             {
               "file": "packages/better-auth/src/plugins/two-factor/two-factor.security.test.ts",
-              "line": 187,
-              "snippet": "const twoFactorEntry = setCookies.find((entry) =>"
-            },
-            {
-              "file": "packages/better-auth/src/plugins/two-factor/two-factor.security.test.ts",
               "line": 195,
               "snippet": "\"$path: replaying captured cookies cannot authenticate or disable 2FA\","
             },
@@ -213,13 +208,7 @@
           "line": 12,
           "snippet": "import { setCookieCache, setSessionCookie } from \"../../cookies\";",
           "references_fix_mechanism": false,
-          "intent_test_hits": [
-            {
-              "file": "packages/better-auth/src/client/client.test.ts",
-              "line": 635,
-              "snippet": "plugins: [organizationClient(), twoFactorClient(), emailOTPClient()],"
-            }
-          ]
+          "intent_test_hits": []
         },
         {
           "file": "packages/better-auth/src/plugins/magic-link/index.ts",
@@ -297,29 +286,29 @@
           "references_fix_mechanism": true,
           "intent_test_hits": [
             {
-              "file": "packages/better-auth/src/client/client.test.ts",
-              "line": 635,
-              "snippet": "plugins: [organizationClient(), twoFactorClient(), emailOTPClient()],"
+              "file": "packages/better-auth/src/plugins/two-factor/two-factor.security.test.ts",
+              "line": 545,
+              "snippet": "* The two-factor OTP attempt counter must survive a burst of concurrent"
             },
             {
-              "file": "packages/better-auth/src/plugins/two-factor/two-factor.account-lockout.test.ts",
-              "line": 146,
-              "snippet": "await auth.api.sendTwoFactorOTP({ body: {}, headers: challengeHeaders });"
+              "file": "packages/better-auth/src/plugins/two-factor/two-factor.security.test.ts",
+              "line": 555,
+              "snippet": "describe(\"two-factor security: OTP attempts are atomic under concurrency\", async () => {"
             },
             {
-              "file": "packages/better-auth/src/plugins/two-factor/two-factor.account-lockout.test.ts",
-              "line": 147,
-              "snippet": "return auth.api.verifyTwoFactorOTP({"
+              "file": "packages/better-auth/src/plugins/two-factor/two-factor.security.test.ts",
+              "line": 565,
+              "snippet": "const isOtpRow = (key: string) => key.includes(\"2fa-otp\");"
             },
             {
-              "file": "packages/better-auth/src/plugins/two-factor/two-factor.account-lockout.test.ts",
-              "line": 195,
-              "snippet": "await auth.api.sendTwoFactorOTP({ body: {}, headers });"
+              "file": "packages/better-auth/src/plugins/two-factor/two-factor.test.ts",
+              "line": 378,
+              "snippet": "expect((res.data as any)?.twoFactorMethods).toEqual([\"totp\", \"otp\"]);"
             },
             {
-              "file": "packages/better-auth/src/plugins/two-factor/two-factor.account-lockout.test.ts",
-              "line": 200,
-              "snippet": "auth.api.verifyTwoFactorOTP({"
+              "file": "packages/better-auth/src/plugins/two-factor/two-factor.test.ts",
+              "line": 749,
+              "snippet": "it(\"should enable 2FA with OTP method\", async () => {"
             }
           ]
         },
@@ -346,13 +335,13 @@
             },
             {
               "file": "packages/better-auth/src/plugins/two-factor/two-factor.test.ts",
-              "line": 337,
-              "snippet": "const res = await client.twoFactor.verifyTotp({"
+              "line": 378,
+              "snippet": "expect((res.data as any)?.twoFactorMethods).toEqual([\"totp\", \"otp\"]);"
             },
             {
               "file": "packages/better-auth/src/plugins/two-factor/two-factor.test.ts",
-              "line": 378,
-              "snippet": "expect((res.data as any)?.twoFactorMethods).toEqual([\"totp\", \"otp\"]);"
+              "line": 880,
+              "snippet": "expect(signInJson.twoFactorMethods).toEqual([\"totp\", \"otp\"]);"
             }
           ]
         },

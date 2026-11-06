@@ -296,22 +296,6 @@ def _module_token(path: str) -> str:
     return stem
 
 
-def _module_variants(path: str) -> list[str]:
-    """Name variants a test might use to refer to a module.
-
-    Tests reference a plugin by its directory name (``magic-link``) but more
-    often by its camelCase symbol (``magicLink`` / ``signInMagicLink``). The
-    intent probe must match either, or a negative control written only in
-    camelCase is missed and the sibling is wrongly reported with no control.
-    """
-    token = _module_token(path)
-    variants = {token}
-    if "-" in token:
-        head, *rest = token.split("-")
-        variants.add(head + "".join(p[:1].upper() + p[1:] for p in rest))
-    return sorted(variants)
-
-
 def analyze(
     repo: GitRepo,
     from_ref: str,
@@ -352,16 +336,31 @@ def analyze(
             intent_hits: list[SurfaceHit] = []
             if intent:
                 references_fix = repo.file_mentions(to_ref, hit.file, intent)
-                # match any name variant a test might use (hyphen or camelCase)
-                tokens = "|".join(re.escape(v) for v in _module_variants(hit.file))
+                # Match the module's hyphenated name as a WHOLE identifier. We
+                # deliberately do not match a camelCase symbol or a bare
+                # substring: a short token ("otp") or a camelCase name
+                # (emailOtp) collides with plugin-registration lines
+                # (emailOTPClient() beside twoFactorClient()) and would credit
+                # an uncontrolled sibling with a control it lacks. Precision
+                # over recall.
+                token = re.escape(_module_token(hit.file))
                 # find test lines that mention this module AND the fix mechanism
-                probe = f"({tokens}).*({intent})|({intent}).*({tokens})"
+                probe = f"({token}).*({intent})|({intent}).*({token})"
+                # git grep (-E) has no portable word boundary, so it matches the
+                # token anywhere on the line; re-check in Python that the token
+                # is a whole identifier, not a substring of a longer symbol.
+                whole = re.compile(
+                    r"(?<![A-Za-z0-9])" + token + r"(?![A-Za-z0-9])", re.IGNORECASE
+                )
                 test_hits = repo.grep_ref(
                     to_ref, probe,
                     scope=p_scope,
                     exclude=[g for g in p_exclude if not _TEST_FILE.search(g)] or [],
                 )
-                intent_hits = [h for h in test_hits if _TEST_FILE.search(h.file)][:5]
+                intent_hits = [
+                    h for h in test_hits
+                    if _TEST_FILE.search(h.file) and whole.search(h.snippet)
+                ][:5]
 
             siblings.append(
                 Sibling(

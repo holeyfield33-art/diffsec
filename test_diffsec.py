@@ -1,11 +1,13 @@
 """Integration tests for diffsec.
 
-Each test builds a throwaway git repo with a known shape -- a patched site, an
-unpatched sibling with no gate, and an unpatched sibling whose only negative
-control is written in camelCase -- then runs ``analyze`` against it and asserts
-the triage. The camelCase case is a regression guard: it is exactly the class
-of silent miss (like the earlier case-sensitivity bug) that makes an agent
-trust a false ``intent_test_hits: none``.
+Each test builds a throwaway git repo with a known shape -- a patched site and
+three unpatched siblings -- then runs ``analyze`` and asserts the triage. Two
+cases are precision regression guards:
+
+- a plugin-registration line (``emailOtpClient()`` beside ``applyGateClient()``)
+  must NOT be credited as a negative control; and
+- a behavioral control that names the module by its hyphenated directory name
+  MUST be detected.
 
 Run from the repo root:  python3 -m unittest test_diffsec
 """
@@ -21,13 +23,7 @@ import diffsec
 
 
 def _git(repo: Path, *args: str) -> None:
-    subprocess.run(
-        ["git", *args],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True, text=True)
 
 
 def _write(repo: Path, rel: str, content: str) -> None:
@@ -37,23 +33,42 @@ def _write(repo: Path, rel: str, content: str) -> None:
 
 
 def _build_fixture(repo: Path) -> None:
-    """A stable->fixed history with one patched site and two siblings."""
+    """A stable->fixed history with one patched site and three siblings."""
     _git(repo, "init", "-q", "-b", "main")
     _git(repo, "config", "user.email", "test@example.com")
     _git(repo, "config", "user.name", "diffsec-test")
     _git(repo, "config", "commit.gpgsign", "false")
 
-    # stable: sign-in writes a session cookie with no gate; two sibling plugins
-    # do the same. email-otp has a test whose only mention of the gate is the
-    # camelCase symbol, never the hyphenated directory name.
+    # stable: the sign-in site and three plugins all write a session cookie with
+    # no gate.
     _write(repo, "src/auth/sign-in.js", "export function signIn(s){ writeCookie(s); }\n")
     _write(repo, "src/plugins/magic-link/index.js", "export function ml(s){ writeCookie(s); }\n")
     _write(repo, "src/plugins/email-otp/index.js", "export function eo(s){ writeCookie(s); }\n")
+    _write(repo, "src/plugins/sms-otp/index.js", "export function so(s){ writeCookie(s); }\n")
+    _write(repo, "src/plugins/sso/index.js", "export function sso(s){ writeCookie(s); }\n")
+
+    # email-otp's only co-mention of the gate is a plugin-REGISTRATION line in
+    # camelCase. This must NOT count as a negative control.
     _write(
         repo,
         "src/plugins/email-otp/index.test.js",
-        "// emailOtp intentionally skips applyGate: passwordless is its own factor\n",
+        "const auth = setup({ plugins: [emailOtpClient(), applyGateClient()] });\n",
     )
+    # sms-otp has a genuine BEHAVIORAL control that names the module by its
+    # hyphenated directory name. This MUST be detected.
+    _write(
+        repo,
+        "src/plugins/sms-otp/index.test.js",
+        "// sms-otp sign-in intentionally skips applyGate: it is its own factor\n",
+    )
+    # sso's token ("sso") appears only as a substring of ssoClient() on a
+    # registration line; whole-identifier matching must reject it.
+    _write(
+        repo,
+        "src/plugins/sso/index.test.js",
+        "const auth = setup({ plugins: [ssoClient(), applyGateClient()] });\n",
+    )
+
     _git(repo, "add", "-A")
     _git(repo, "commit", "-q", "-m", "initial")
     _git(repo, "tag", "stable")
@@ -118,19 +133,32 @@ class DiffsecIntegration(unittest.TestCase):
         self.assertFalse(ml.references_fix_mechanism)
         self.assertEqual(ml.intent_test_hits, [])
 
-    def test_camelcase_negative_control_is_detected(self) -> None:
-        # Regression guard: the only gate mention for email-otp is `emailOtp`
-        # (camelCase), never the hyphenated dir name. Without camelCase variant
-        # matching this comes back empty and the sibling looks like a top
-        # unpatched candidate when it is actually intended.
+    def test_registration_line_not_credited(self) -> None:
+        # Precision guard: email-otp's only gate co-mention is a camelCase
+        # plugin-registration line. It must not be read as a negative control,
+        # or a consumer would wrongly downgrade an uncontrolled sibling.
         eo = self._siblings().get("src/plugins/email-otp/index.js")
         self.assertIsNotNone(eo, "email-otp should be an unpatched sibling")
-        self.assertTrue(
-            eo.intent_test_hits,
-            "camelCase negative control must be detected",
+        self.assertEqual(
+            eo.intent_test_hits, [],
+            "a plugin-registration line must not count as a control",
         )
+
+    def test_short_token_substring_not_credited(self) -> None:
+        # Precision guard: "sso" appears only inside ssoClient() on a
+        # registration line. Whole-identifier matching must not credit it.
+        sso = self._siblings().get("src/plugins/sso/index.js")
+        self.assertIsNotNone(sso, "sso should be an unpatched sibling")
+        self.assertEqual(sso.intent_test_hits, [])
+
+    def test_hyphen_named_control_is_detected(self) -> None:
+        # Recall guard: a behavioral control naming the module by its hyphenated
+        # directory name must still be detected.
+        so = self._siblings().get("src/plugins/sms-otp/index.js")
+        self.assertIsNotNone(so, "sms-otp should be an unpatched sibling")
+        self.assertTrue(so.intent_test_hits, "hyphen-named control must be detected")
         self.assertTrue(
-            any("index.test.js" in h.file for h in eo.intent_test_hits),
+            any("index.test.js" in h.file for h in so.intent_test_hits),
             "the hit should point at the test file",
         )
 
