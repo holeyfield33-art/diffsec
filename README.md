@@ -50,6 +50,20 @@ Scope/exclude use git pathspec globs and are repeatable.
    The strongest unpatched candidate is `references_fix_mechanism=false` **and**
    `intent_test_hits=none`.
 
+## Output contract (for agent consumers)
+
+The JSON is the agent-facing surface. Rely on these top-level fields:
+`schema_version` (currently `"1"` — check it before parsing), `meta_warning`,
+`security_commits[]`, and `patterns[].unpatched_siblings[]`. Process exit codes:
+`0` success, `2` usage/environment error (message on stderr).
+
+**`intent_test_hits: none` is necessary, not sufficient.** The probe matches a
+module's hyphenated directory name *and* its camelCase symbol (so `email-otp`
+and `emailOtp` both hit), but it is still regex over source: a control that
+refers to the module another way, or lives outside the searched tests, is
+missed. Treat `none` as "look here first," not "no control exists" — read the
+sibling's source and tests before concluding anything.
+
 ## Pattern file
 
 ```json
@@ -84,6 +98,15 @@ place target-specific knowledge lives.
   is the human/agent's job. That's by design — pretending to auto-understand
   semantics is how these tools produce false findings.
 - **Matching is case-insensitive**, to catch prose-caps terms (`2FA`, `CSRF`).
+
+## Tests
+
+```sh
+python3 -m unittest test_diffsec
+```
+
+Integration tests build a throwaway git repo (patched site, ungated sibling,
+camelCase-only negative control) and assert the triage.
 
 ## Validated against
 
