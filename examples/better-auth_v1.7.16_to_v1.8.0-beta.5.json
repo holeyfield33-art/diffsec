@@ -1,4 +1,5 @@
 {
+  "schema_version": "1",
   "repo": "/home/claude/ba-work/repo",
   "from_ref": "v1.7.16",
   "to_ref": "v1.8.0-beta.5",
@@ -212,7 +213,13 @@
           "line": 12,
           "snippet": "import { setCookieCache, setSessionCookie } from \"../../cookies\";",
           "references_fix_mechanism": false,
-          "intent_test_hits": []
+          "intent_test_hits": [
+            {
+              "file": "packages/better-auth/src/client/client.test.ts",
+              "line": 635,
+              "snippet": "plugins: [organizationClient(), twoFactorClient(), emailOTPClient()],"
+            }
+          ]
         },
         {
           "file": "packages/better-auth/src/plugins/magic-link/index.ts",

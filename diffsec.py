@@ -137,6 +137,7 @@ class PatternResult:
 
 @dataclass
 class Report:
+    schema_version: str
     repo: str
     from_ref: str
     to_ref: str
@@ -295,6 +296,22 @@ def _module_token(path: str) -> str:
     return stem
 
 
+def _module_variants(path: str) -> list[str]:
+    """Name variants a test might use to refer to a module.
+
+    Tests reference a plugin by its directory name (``magic-link``) but more
+    often by its camelCase symbol (``magicLink`` / ``signInMagicLink``). The
+    intent probe must match either, or a negative control written only in
+    camelCase is missed and the sibling is wrongly reported with no control.
+    """
+    token = _module_token(path)
+    variants = {token}
+    if "-" in token:
+        head, *rest = token.split("-")
+        variants.add(head + "".join(p[:1].upper() + p[1:] for p in rest))
+    return sorted(variants)
+
+
 def analyze(
     repo: GitRepo,
     from_ref: str,
@@ -335,9 +352,10 @@ def analyze(
             intent_hits: list[SurfaceHit] = []
             if intent:
                 references_fix = repo.file_mentions(to_ref, hit.file, intent)
-                token = re.escape(_module_token(hit.file))
+                # match any name variant a test might use (hyphen or camelCase)
+                tokens = "|".join(re.escape(v) for v in _module_variants(hit.file))
                 # find test lines that mention this module AND the fix mechanism
-                probe = f"({token}).*({intent})|({intent}).*({token})"
+                probe = f"({tokens}).*({intent})|({intent}).*({tokens})"
                 test_hits = repo.grep_ref(
                     to_ref, probe,
                     scope=p_scope,
@@ -385,6 +403,7 @@ def analyze(
     )
 
     return Report(
+        schema_version="1",
         repo=str(repo.path),
         from_ref=from_ref,
         to_ref=to_ref,

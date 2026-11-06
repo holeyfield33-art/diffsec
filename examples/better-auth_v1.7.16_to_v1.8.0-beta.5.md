@@ -29,7 +29,7 @@
   | `packages/better-auth/src/api/routes/update-user.ts:6` | **no** | none |
   | `packages/better-auth/src/cookies/index.ts:157` | yes | 4 (two-factor.security.test.ts:63, two-factor.security.test.ts:187, two-factor.security.test.ts:195, two-factor.security.test.ts:217) |
   | `packages/better-auth/src/plugins/admin/routes.ts:14` | **no** | 1 (types.test.ts:8) |
-  | `packages/better-auth/src/plugins/email-otp/routes.ts:12` | **no** | none |
+  | `packages/better-auth/src/plugins/email-otp/routes.ts:12` | **no** | 1 (client.test.ts:635) |
   | `packages/better-auth/src/plugins/magic-link/index.ts:9` | **no** | 1 (two-factor.test.ts:2832) |
   | `packages/better-auth/src/plugins/multi-session/index.ts:14` | **no** | none |
   | `packages/better-auth/src/plugins/oauth-popup/index.ts:316` | **no** | none |
